@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: mongo
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root123
+      MONGO_INITDB_DATABASE: blackjack
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "-u", "root", "-p", "root123", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: blackjack
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  blackjack-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blackjack-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATA_MONGODB_URI: mongodb://root:root123@mongo:27017/blackjack
+      SPRING_R2DBC_URL: r2dbc:mysql://mysql:3306/blackjack
+      SPRING_R2DBC_USERNAME: root
+      SPRING_R2DBC_PASSWORD: root123
+
+  test-blackjack:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blackjack-tests
+    command: mvn test
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATA_MONGODB_URI: mongodb://root:root123@mongo:27017/blackjack
+      SPRING_R2DBC_URL: r2dbc:mysql://mysql:3306/blackjack
+      SPRING_R2DBC_USERNAME: root
+      SPRING_R2DBC_PASSWORD: root123
+
+volumes:
+  mongo_data:
+  mysql_data:
