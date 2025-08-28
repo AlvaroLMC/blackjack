@@ -9,4 +9,7 @@ public interface PlayerService {
     Mono<Player> updatePlayerName(Long playerId, String newName);
     Flux<Player> getRanking();
     Mono<Player> updatePlayerWins(Long playerId);
+
+    // 👇 Nuevo método para crear jugador
+    Mono<Player> createPlayer(Player player);
 }

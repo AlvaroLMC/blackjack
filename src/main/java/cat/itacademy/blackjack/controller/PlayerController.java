@@ -22,6 +22,25 @@ public class PlayerController {
         this.playerService = playerService;
     }
 
+    @PostMapping("/player")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(
+            summary = "Crear un nuevo jugador",
+            description = "Crea un jugador con el nombre proporcionado.\n"
+                    + "- El nombre solo permite letras y espacios. Ejemplo: Juan Pérez.\n"
+                    + "- Tamaño máximo: 50 caracteres."
+    )
+    public Mono<Player> createPlayer(@RequestBody Player player) {
+        String name = player.getName();
+        if (name == null || name.trim().isEmpty()) {
+            return Mono.error(new GameException("El nombre del jugador no puede estar vacío.", HttpStatus.BAD_REQUEST));
+        }
+        if (!name.matches("[\\p{L} ]+")) {
+            return Mono.error(new GameException("Solo se permiten letras y espacios", HttpStatus.BAD_REQUEST));
+        }
+        return playerService.createPlayer(player);
+    }
+
     @PutMapping("/player/{playerId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -42,8 +61,6 @@ public class PlayerController {
         }
         return playerService.updatePlayerName(id, name);
     }
-
-
 
     @GetMapping("/ranking")
     @ResponseStatus(HttpStatus.OK)

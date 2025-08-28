@@ -43,4 +43,13 @@ public class PlayerServiceImpl implements PlayerService {
                     return playerRepository.save(player);
                 });
     }
+
+    // 👇 Nuevo método
+    @Override
+    public Mono<Player> createPlayer(Player player) {
+        player.setPlayerWinsCounter(0); // aseguramos contador en 0
+        return playerRepository.save(player);
+    }
+
+
 }
