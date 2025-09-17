@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter @Setter
@@ -14,7 +15,10 @@ import org.springframework.data.relational.core.mapping.Table;
 public class Player {
     @Id
     private Long id;
+
     private String name;
+
+    @Column("player_wins_counter")
     private int playerWinsCounter = 0;
 
     public Player(String name) {

@@ -47,12 +47,6 @@ public class GameController {
         return gameService.createGame(playerName);
     }
 
-
-
-
-
-
-
     @PostMapping("/{id}/play")
     @ResponseStatus(HttpStatus.OK)
     @Operation(

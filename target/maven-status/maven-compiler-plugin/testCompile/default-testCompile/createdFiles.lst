@@ -1,5 +1,4 @@
 cat\itacademy\blackjack\controller\GameControllerTest.class
 cat\itacademy\blackjack\controller\PlayerControllerTest.class
 cat\itacademy\blackjack\service\impl\GameServiceImplTest.class
-cat\itacademy\blackjack\BlackjackApplicationTests.class
 cat\itacademy\blackjack\service\impl\PlayerServiceImplTest.class

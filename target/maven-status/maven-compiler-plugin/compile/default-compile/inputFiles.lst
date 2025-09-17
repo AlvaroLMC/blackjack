@@ -16,10 +16,10 @@ C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacad
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\exception\GameException.java
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\enums\CardValue.java
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\model\Game.java
+C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\controller\HealthController.java
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\model\Player.java
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\dto\PlayerNameRequest.java
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\service\impl\PlayerServiceImpl.java
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\enums\PlayerMove.java
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\controller\PlayerController.java
 C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\BlackjackApplication.java
-C:\Users\rquer\Documents\IdeaProjects\blackjack-project\src\main\java\cat\itacademy\blackjack\config\MySQLConfig.java

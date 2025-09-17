@@ -1,6 +1,5 @@
 package cat.itacademy.blackjack.controller;
 
-
 import cat.itacademy.blackjack.enums.PlayerMove;
 import cat.itacademy.blackjack.exception.GameException;
 import cat.itacademy.blackjack.model.Game;
