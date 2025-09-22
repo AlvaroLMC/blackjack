@@ -40,14 +40,21 @@
             <artifactId>spring-boot-starter-data-r2dbc</artifactId>
         </dependency>
 
-        <!-- Driver R2DBC para MySQL -->
+        <!-- R2DBC MySQL -->
         <dependency>
             <groupId>dev.miku</groupId>
             <artifactId>r2dbc-mysql</artifactId>
             <version>0.8.2.RELEASE</version>
         </dependency>
 
-        <!-- MySQL JDBC driver (opcional, solo para herramientas externas) -->
+        <!-- R2DBC PostgreSQL -->
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-postgresql</artifactId>
+            <version>0.8.13.RELEASE</version>
+        </dependency>
+
+        <!-- MySQL JDBC driver (opcional para herramientas externas) -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
@@ -115,14 +122,13 @@
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-java</artifactId>
             <version>3.0.0</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <finalName>BlackjackAPI-1.0.0</finalName>
         <plugins>
-            <!-- Spring Boot: crea un jar ejecutable -->
+            <!-- Spring Boot plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
