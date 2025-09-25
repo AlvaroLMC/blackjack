@@ -1,6 +1,5 @@
-CREATE TABLE player (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    player_wins_counter INT DEFAULT 0 NOT NULL
+CREATE TABLE IF NOT EXISTS player (
+                                      id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                      name VARCHAR(50) NOT NULL,
+                                      player_wins_counter INT DEFAULT 0 NOT NULL
 );
-

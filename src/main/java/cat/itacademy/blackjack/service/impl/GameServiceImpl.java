@@ -18,15 +18,22 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 @Service
 public class GameServiceImpl implements GameService {
+
     private final GameRepository gameRepository;
     private final PlayerService playerService;
 
     @Override
     public Mono<Game> createGame(String playerName) {
         return playerService.findByName(playerName)
+                .switchIfEmpty(Mono.error(new GameException("Player not found: " + playerName, HttpStatus.NOT_FOUND)))
                 .flatMap(savedPlayer -> {
                     Game game = new Game(savedPlayer.getId(), savedPlayer.getName());
-                    return gameRepository.save(game);
+                    try {
+                        return gameRepository.save(game);
+                    } catch (Exception e) {
+                        return Mono.error(new GameException("Error creating game: " + e.getMessage(),
+                                HttpStatus.INTERNAL_SERVER_ERROR));
+                    }
                 });
     }
 
@@ -36,31 +43,48 @@ public class GameServiceImpl implements GameService {
                 .switchIfEmpty(Mono.error(new GameException("Game not found with id: " + gameId, HttpStatus.NOT_FOUND)))
                 .flatMap(game -> {
                     if (game.getStatus() == GameStatus.FINISHED) {
-                        return Mono.error(new GameException("Game already ended with id: " + gameId, HttpStatus.NOT_FOUND));
+                        return Mono.error(new GameException("Game already ended with id: " + gameId,
+                                HttpStatus.CONFLICT));
                     }
-                    game.playMove(move);
+                    try {
+                        game.playMove(move);
+                    } catch (Exception e) {
+                        return Mono.error(new GameException("Error playing move: " + e.getMessage(),
+                                HttpStatus.INTERNAL_SERVER_ERROR));
+                    }
 
-                    return game.getWinner() == Winner.PLAYER ?
-                            playerService.updatePlayerWins(game.getPlayerId()).then(gameRepository.save(game)) :
-                            gameRepository.save(game);
+                    if (game.getWinner() == Winner.PLAYER) {
+                        return playerService.updatePlayerWins(game.getPlayerId())
+                                .then(gameRepository.save(game))
+                                .onErrorResume(e -> Mono.error(new GameException("Error updating player wins: " + e.getMessage(),
+                                        HttpStatus.INTERNAL_SERVER_ERROR)));
+                    } else {
+                        return gameRepository.save(game)
+                                .onErrorResume(e -> Mono.error(new GameException("Error saving game: " + e.getMessage(),
+                                        HttpStatus.INTERNAL_SERVER_ERROR)));
+                    }
                 });
     }
 
     @Override
     public Flux<Game> getAllGames() {
-        return gameRepository.findAll();
+        return gameRepository.findAll()
+                .onErrorResume(e -> Flux.error(new GameException("Error fetching games: " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR)));
     }
 
     @Override
     public Mono<Game> getGame(String id) {
         return gameRepository.findById(id)
-                .switchIfEmpty(Mono.error(new GameException("Game not found with id: " + id, HttpStatus.NOT_FOUND)));
+                .switchIfEmpty(Mono.error(new GameException("Game not found with id: " + id, HttpStatus.NOT_FOUND)))
+                .onErrorResume(e -> Mono.error(new GameException("Error fetching game: " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR)));
     }
 
     @Override
     public Mono<Void> deleteGame(String id) {
-        return gameRepository.deleteById(id);
+        return gameRepository.deleteById(id)
+                .onErrorResume(e -> Mono.error(new GameException("Error deleting game: " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR)));
     }
-
-
 }

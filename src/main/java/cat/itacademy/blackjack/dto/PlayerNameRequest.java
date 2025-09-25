@@ -1,9 +1,15 @@
 package cat.itacademy.blackjack.dto;
 
+import lombok.Getter;
+import lombok.Setter;
 
-import lombok.Data;
 
-@Data
+@Setter
+@Getter
 public class PlayerNameRequest {
     private String playerName;
+
+    public PlayerNameRequest() {}
+    public PlayerNameRequest(String playerName) { this.playerName = playerName; }
+
 }

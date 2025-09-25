@@ -4,71 +4,53 @@ import cat.itacademy.blackjack.exception.GameException;
 import cat.itacademy.blackjack.model.Player;
 import cat.itacademy.blackjack.service.PlayerService;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@Validated
+@RequestMapping("/player")
+@RequiredArgsConstructor
 public class PlayerController {
 
     private final PlayerService playerService;
 
-    @Autowired
-    public PlayerController(PlayerService playerService) {
-        this.playerService = playerService;
-    }
-
-    @PostMapping("/player")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(
-            summary = "Crear un nuevo jugador",
-            description = "Crea un jugador con el nombre proporcionado.\n"
-                    + "- El nombre solo permite letras y espacios. Ejemplo: Juan Pérez.\n"
-                    + "- Tamaño máximo: 50 caracteres."
-    )
+    @Operation(summary = "Create a new player")
     public Mono<Player> createPlayer(@RequestBody Player player) {
-        String name = player.getName();
-        if (name == null || name.trim().isEmpty()) {
-            return Mono.error(new GameException("El nombre del jugador no puede estar vacío.", HttpStatus.BAD_REQUEST));
-        }
-        if (!name.matches("[\\p{L} ]+")) {
-            return Mono.error(new GameException("Solo se permiten letras y espacios", HttpStatus.BAD_REQUEST));
-        }
-        return playerService.createPlayer(player);
+        return validatePlayerNameReactive(player.getName())
+                .flatMap(validName -> playerService.createPlayer(player));
     }
 
-    @PutMapping("/player/{playerId}")
+    @PutMapping("/{playerId}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(
-            summary = "Actualizar nombre del jugador",
-            description = "Cambia el nombre antiguo por el nuevo proporcionado usando el ID del jugador.\n"
-                    + "- El nombre solo permite letras y espacios. Ejemplo: Juan Pérez.\n"
-                    + "- Tamaño máximo: 50 caracteres."
-    )
-    public Mono<Player> updatePlayerName(
-            @PathVariable("playerId") Long id,
-            @RequestParam("name") String name) {
-
-        if (name == null || name.trim().isEmpty()) {
-            return Mono.error(new GameException("El nombre del jugador no puede estar vacío. ID: " + id, HttpStatus.BAD_REQUEST));
-        }
-        if (!name.matches("[\\p{L} ]+")) {
-            return Mono.error(new GameException("Solo se permiten letras y espacios", HttpStatus.BAD_REQUEST));
-        }
-        return playerService.updatePlayerName(id, name);
+    @Operation(summary = "Update player name")
+    public Mono<Player> updatePlayerName(@PathVariable Long playerId,
+                                         @RequestBody Player updatedPlayer) {
+        return validatePlayerNameReactive(updatedPlayer.getName())
+                .flatMap(validName -> playerService.updatePlayerName(playerId, validName));
     }
 
     @GetMapping("/ranking")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(
-            summary = "Mostrar ranking de jugadores",
-            description = "Muestra el ranking de todos los jugadores."
-    )
+    @Operation(summary = "Show player ranking")
     public Flux<Player> getRanking() {
         return playerService.getRanking();
+    }
+
+    private Mono<String> validatePlayerNameReactive(String name) {
+        if (name == null || name.isBlank()) {
+            return Mono.error(new GameException("Name cannot be empty."));
+        }
+        if (name.length() > 50) {
+            return Mono.error(new GameException("Name cannot be longer than 50 characters."));
+        }
+        if (!name.matches("^[\\p{L} ]+$")) {
+            return Mono.error(new GameException("Only letters and spaces are allowed."));
+        }
+        return Mono.just(name);
     }
 }

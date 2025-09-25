@@ -1,10 +1,11 @@
 package cat.itacademy.blackjack.controller;
 
+import cat.itacademy.blackjack.dto.PlayerNameRequest;
+import cat.itacademy.blackjack.dto.SelectMoveRequest;
 import cat.itacademy.blackjack.enums.PlayerMove;
 import cat.itacademy.blackjack.exception.GameException;
 import cat.itacademy.blackjack.model.Game;
 import cat.itacademy.blackjack.service.GameService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,14 +15,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 class GameControllerTest {
-
-    @BeforeAll
-    static void setupAll() {
-    }
 
     @Mock
     private GameService gameService;
@@ -35,60 +31,71 @@ class GameControllerTest {
     }
 
     @Test
-    void createGame_validPlayerName_returnsGame() {
-        Game game = new Game(1L, "Alice");
+    void createGame_validName_returnsGame() {
+        PlayerNameRequest request = new PlayerNameRequest();
+        request.setPlayerName("Alice");
+
+        Game game = new Game();
+        game.setPlayerName("Alice");
+
         when(gameService.createGame("Alice")).thenReturn(Mono.just(game));
 
-        StepVerifier.create(gameController.createGame("Alice"))
-                .expectNext(game)
+        StepVerifier.create(gameController.createGame(request))
+                .expectNextMatches(g -> g.getPlayerName().equals("Alice"))
                 .verifyComplete();
     }
 
     @Test
     void createGame_invalidName_throwsException() {
-        StepVerifier.create(gameController.createGame("1234"))
-                .expectError(GameException.class)
+        PlayerNameRequest request = new PlayerNameRequest();
+        request.setPlayerName("123");
+
+        StepVerifier.create(gameController.createGame(request))
+                .expectErrorMatches(e -> e instanceof GameException &&
+                        e.getMessage().equals("Only letters and spaces are allowed."))
                 .verify();
     }
 
     @Test
-    void playMove_valid_returnsGame() {
-        Game game = new Game(1L, "Alice");
-        when(gameService.playGame(eq("gameId"), eq(PlayerMove.HIT)))
-                .thenReturn(Mono.just(game));
+    void playMove_validMove_returnsGame() {
+        String gameId = "1";
+        SelectMoveRequest moveRequest = new SelectMoveRequest();
+        moveRequest.setMove(PlayerMove.HIT);
 
-        StepVerifier.create(gameController.playMove("gameId", PlayerMove.HIT))
-                .expectNext(game)
+        Game game = new Game();
+        game.setPlayerName("Alice");
+
+        when(gameService.playGame(gameId, PlayerMove.HIT)).thenReturn(Mono.just(game));
+
+        StepVerifier.create(gameController.playMove(gameId, moveRequest))
+                .expectNextMatches(g -> g.getPlayerName().equals("Alice"))
                 .verifyComplete();
     }
 
     @Test
-    void getGame_returnsGame() {
-        Game game = new Game(1L, "Bob");
-        when(gameService.getGame("id")).thenReturn(Mono.just(game));
+    void playMove_nullMove_throwsException() {
+        String gameId = "1";
+        SelectMoveRequest moveRequest = new SelectMoveRequest();
+        moveRequest.setMove(null);
 
-        StepVerifier.create(gameController.getGame("id"))
-                .expectNext(game)
-                .verifyComplete();
+        StepVerifier.create(gameController.playMove(gameId, moveRequest))
+                .expectErrorMatches(e -> e instanceof GameException &&
+                        e.getMessage().equals("Move cannot be null"))
+                .verify();
     }
 
     @Test
-    void getAllGames_returnsFlux() {
-        Game g1 = new Game(1L, "A");
-        Game g2 = new Game(2L, "B");
+    void getAllGames_returnsGames() {
+        Game g1 = new Game();
+        g1.setPlayerName("Alice");
+        Game g2 = new Game();
+        g2.setPlayerName("Bob");
+
         when(gameService.getAllGames()).thenReturn(Flux.just(g1, g2));
 
         StepVerifier.create(gameController.getAllGames())
-                .expectNext(g1)
-                .expectNext(g2)
-                .verifyComplete();
-    }
-
-    @Test
-    void deleteGame_returnsVoid() {
-        when(gameService.deleteGame("id")).thenReturn(Mono.empty());
-
-        StepVerifier.create(gameController.deleteGame("id"))
+                .expectNextMatches(g -> g.getPlayerName().equals("Alice"))
+                .expectNextMatches(g -> g.getPlayerName().equals("Bob"))
                 .verifyComplete();
     }
 }

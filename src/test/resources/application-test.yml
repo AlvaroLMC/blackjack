@@ -6,6 +6,6 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:0/test # fake para que no intente conectar
+      uri: mongodb://localhost:0/test
 
 

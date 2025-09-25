@@ -1,62 +1,25 @@
-version: "3.9"
-
 services:
-  mongo:
-    image: mongo:7.0
-    container_name: mongo
-    ports:
-      - "27018:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root123
-      MONGO_INITDB_DATABASE: blackjack
-    volumes:
-      - mongo_data:/data/db
-
   mysql:
     image: mysql:8.0
-    container_name: mysql
-    ports:
-      - "3306:3306"
+    container_name: mysql_blackjack
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root123
       MYSQL_DATABASE: blackjack
-    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
-  blackjack-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: alvaromendozacuello/blackjack-api:latest
-    container_name: blackjack-api
+  mongo:
+    image: mongo:6.0
+    container_name: mongo_blackjack
+    restart: always
     ports:
-      - "8080:8080"
-    depends_on:
-      - mongo
-      - mysql
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATA_MONGODB_URI: mongodb://root:root123@mongo:27017/blackjack
-      SPRING_R2DBC_URL: r2dbc:mysql://mysql:3306/blackjack
-      SPRING_R2DBC_USERNAME: root
-      SPRING_R2DBC_PASSWORD: root123
-
-  test-blackjack:
-    image: alvaromendozacuello/blackjack-api:latest
-    container_name: blackjack-tests
-    command: mvn test
-    depends_on:
-      - mongo
-      - mysql
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATA_MONGODB_URI: mongodb://root:root123@mongo:27017/blackjack
-      SPRING_R2DBC_URL: r2dbc:mysql://mysql:3306/blackjack
-      SPRING_R2DBC_USERNAME: root
-      SPRING_R2DBC_PASSWORD: root123
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
 
 volumes:
-  mongo_data:
   mysql_data:
+  mongo_data:

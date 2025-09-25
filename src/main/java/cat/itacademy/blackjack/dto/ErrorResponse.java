@@ -1,8 +1,6 @@
 package cat.itacademy.blackjack.dto;
 
-
 import lombok.Getter;
-
 import java.time.LocalDateTime;
 
 @Getter

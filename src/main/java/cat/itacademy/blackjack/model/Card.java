@@ -20,7 +20,6 @@ public class Card {
     @JsonIgnore
     private CardSuit suit;
 
-    // ✅ Devuelve el valor numérico del enum
     public int getCardValue() {
         return value.getValue();
     }

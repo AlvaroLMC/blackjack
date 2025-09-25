@@ -42,12 +42,12 @@ public class Game {
 
     public void playMove(PlayerMove move) {
         if (status == GameStatus.FINISHED)
-            throw new GameException("El juego ha finalizado: " + playerId, HttpStatus.NOT_FOUND);
+            throw new GameException("The game has finished: " + playerId, HttpStatus.NOT_FOUND);
 
         switch (move) {
             case HIT -> hit();
             case STAND -> stand();
-            default -> throw new GameException("Movimiento inválido. Elige HIT o STAND: " + playerId, HttpStatus.NOT_FOUND);
+            default -> throw new GameException("Invalid move. Choose HIT or STAND: " + playerId, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -61,7 +61,7 @@ public class Game {
 
     private void hit() {
         Card card = deck.drawCard();
-        if (card == null) throw new GameException("No quedan cartas en el mazo", HttpStatus.BAD_REQUEST);
+        if (card == null) throw new GameException("No cards left in the deck", HttpStatus.BAD_REQUEST);
 
         playerHand.addCard(card);
 
@@ -71,7 +71,7 @@ public class Game {
     private void stand() {
         while (croupierHand.getHandValue() < 17) {
             Card card = deck.drawCard();
-            if (card == null) break; // No quedan cartas
+            if (card == null) break; // No cards left
             croupierHand.addCard(card);
         }
 

@@ -28,46 +28,75 @@ class PlayerControllerTest {
     }
 
     @Test
-    void updatePlayerName_valid_returnsPlayer() {
-        Player updated = new Player("New Name");
+    void createPlayer_validName_returnsPlayer() {
+        Player request = new Player();
+        request.setName("Charlie");
+        Player saved = new Player();
+        saved.setName("Charlie");
 
-        when(playerService.updatePlayerName(1L, "New Name")).thenReturn(Mono.just(updated));
+        when(playerService.createPlayer(request)).thenReturn(Mono.just(saved));
 
-        StepVerifier.create(playerController.updatePlayerName(1L, "New Name"))
-                .expectNextMatches(player -> player.getName().equals("New Name"))
+        StepVerifier.create(playerController.createPlayer(request))
+                .expectNextMatches(player -> player.getName().equals("Charlie"))
                 .verifyComplete();
     }
 
     @Test
-    void updatePlayerName_invalidName_throwsException() {
-        Long playerId = 1L;
-        String invalidName = "123Invalid";
+    void createPlayer_invalidName_throwsException() {
+        Player request = new Player();
+        request.setName("1234");
 
-        StepVerifier.create(playerController.updatePlayerName(playerId, invalidName))
-                .expectErrorMatches(throwable ->
-                        throwable instanceof GameException &&
-                                throwable.getMessage().contains("Solo se permiten letras y espacios")
-                )
+        StepVerifier.create(playerController.createPlayer(request))
+                .expectErrorMatches(e -> e instanceof GameException &&
+                        e.getMessage().equals("Only letters and spaces are allowed."))
                 .verify();
+    }
+
+    @Test
+    void updatePlayerName_validName_returnsPlayer() {
+        Long playerId = 1L;
+        Player request = new Player();
+        request.setName("Alice");
+        Player updatedPlayer = new Player();
+        updatedPlayer.setName("Alice");
+
+        when(playerService.updatePlayerName(playerId, "Alice")).thenReturn(Mono.just(updatedPlayer));
+
+        StepVerifier.create(playerController.updatePlayerName(playerId, request))
+                .expectNextMatches(player -> player.getName().equals("Alice"))
+                .verifyComplete();
     }
 
     @Test
     void updatePlayerName_blankName_throwsException() {
         Long playerId = 1L;
-        String blankName = "   ";
+        Player request = new Player();
+        request.setName("   ");
 
-        StepVerifier.create(playerController.updatePlayerName(playerId, blankName))
-                .expectErrorMatches(throwable ->
-                        throwable instanceof GameException &&
-                                throwable.getMessage().contains("no puede estar vacío")
-                )
+        StepVerifier.create(playerController.updatePlayerName(playerId, request))
+                .expectErrorMatches(e -> e instanceof GameException &&
+                        e.getMessage().equals("Name cannot be empty."))
                 .verify();
     }
 
     @Test
-    void getRanking_returnsFlux() {
-        Player p1 = new Player("Alice");
-        Player p2 = new Player("Bob");
+    void updatePlayerName_invalidName_throwsException() {
+        Long playerId = 1L;
+        Player request = new Player();
+        request.setName("123Invalid");
+
+        StepVerifier.create(playerController.updatePlayerName(playerId, request))
+                .expectErrorMatches(e -> e instanceof GameException &&
+                        e.getMessage().equals("Only letters and spaces are allowed."))
+                .verify();
+    }
+
+    @Test
+    void getRanking_returnsPlayers() {
+        Player p1 = new Player();
+        p1.setName("Alice");
+        Player p2 = new Player();
+        p2.setName("Bob");
 
         when(playerService.getRanking()).thenReturn(Flux.just(p1, p2));
 

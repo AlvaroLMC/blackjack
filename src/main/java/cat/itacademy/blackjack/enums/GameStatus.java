@@ -1,6 +1,5 @@
 package cat.itacademy.blackjack.enums;
 
-
 public enum GameStatus {
     IN_PROGRESS("In Progress"),
     FINISHED("Finished");

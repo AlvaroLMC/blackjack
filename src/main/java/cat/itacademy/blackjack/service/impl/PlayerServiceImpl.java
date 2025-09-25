@@ -22,7 +22,7 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Mono<Player> updatePlayerName(Long playerId, String newName) {
         return playerRepository.findById(playerId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Jugador no encontrado: " + playerId)))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Player not found: " + playerId)))
                 .flatMap(player -> {
                     player.setName(newName);
                     return playerRepository.save(player);
@@ -37,7 +37,7 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Mono<Player> updatePlayerWins(Long playerId) {
         return playerRepository.findById(playerId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Jugador no encontrado: " + playerId)))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Player not found: " + playerId)))
                 .flatMap(player -> {
                     player.incrementWins();
                     return playerRepository.save(player);
@@ -47,7 +47,7 @@ public class PlayerServiceImpl implements PlayerService {
     // 👇 Nuevo método
     @Override
     public Mono<Player> createPlayer(Player player) {
-        player.setPlayerWinsCounter(0); // aseguramos contador en 0
+        player.setPlayerWinsCounter(0);
         return playerRepository.save(player);
     }
 

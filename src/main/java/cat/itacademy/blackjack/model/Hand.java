@@ -25,13 +25,12 @@ public class Hand {
         int aces = 0;
 
         for (Card card : cards) {
-            total += card.getCardValue(); // ✅ suma el valor numérico
-            if (card.getValue() == CardValue.ACE) { // ✅ usa directamente el enum
+            total += card.getCardValue();
+            if (card.getValue() == CardValue.ACE) {
                 aces++;
             }
         }
 
-        // Ajustar Ases de 11 a 1 si es necesario
         while (total > 21 && aces > 0) {
             total -= 10;
             aces--;
