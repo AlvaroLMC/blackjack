@@ -2,27 +2,31 @@ package cat.itacademy.blackjack.model;
 
 import cat.itacademy.blackjack.enums.CardSuit;
 import cat.itacademy.blackjack.enums.CardValue;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Data
+@NoArgsConstructor
 public class Deck {
-    private final List<Card> cards;
+    private List<Card> cards = new ArrayList<>();
 
-    public Deck() {
-        this.cards = initializeDeck();
-        shuffle();
+    public Deck(boolean initialize) {
+        if (initialize) {
+            initializeDeck();
+            shuffle();
+        }
     }
 
-    private List<Card> initializeDeck() {
-        List<Card> deck = new ArrayList<>();
+    private void initializeDeck() {
         for (CardSuit suit : CardSuit.values()) {
             for (CardValue value : CardValue.values()) {
-                deck.add(new Card(value, suit));
+                cards.add(new Card(value, suit));
             }
         }
-        return deck;
     }
 
     public void shuffle() {
@@ -30,11 +34,10 @@ public class Deck {
     }
 
     public Card drawCard() {
-        if (cards.isEmpty()) return null;
+        if (cards.isEmpty()) {
+            initializeDeck();
+            shuffle();
+        }
         return cards.remove(0);
-    }
-
-    public List<Card> getCards() {
-        return new ArrayList<>(cards);
     }
 }

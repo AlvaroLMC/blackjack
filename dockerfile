@@ -1,25 +1,36 @@
-# Etapa de build con Maven
-FROM maven:3.9.3-eclipse-temurin-17 AS build
+# Multi-stage build for optimized image size
+
+# Stage 1: Build
+FROM maven:3.9.5-eclipse-temurin-17-alpine AS build
+
 WORKDIR /app
 
-# Copiamos pom.xml y descargamos dependencias (caché)
+# Copy pom.xml and download dependencies (cached layer)
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline -B
 
-# Copiamos todo el código fuente
+# Copy source code and build
 COPY src ./src
+RUN mvn clean package -DskipTests -B
 
-# Compilamos sin ejecutar tests
-RUN mvn clean package -DskipTests
+# Stage 2: Runtime
+FROM eclipse-temurin:17-jre-alpine
 
-# Etapa de runtime
-FROM openjdk:17-jdk-slim
 WORKDIR /app
 
-# Copiamos el jar generado
+# Create non-root user for security
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
+# Copy JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
 
+# Expose port
 EXPOSE 8080
 
-# Arrancamos la app (Render inyectará SPRING_PROFILES_ACTIVE=docker desde env vars)
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+
+# Run application
 ENTRYPOINT ["java", "-jar", "app.jar"]

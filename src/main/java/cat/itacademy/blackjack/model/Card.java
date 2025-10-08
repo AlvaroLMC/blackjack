@@ -2,30 +2,19 @@ package cat.itacademy.blackjack.model;
 
 import cat.itacademy.blackjack.enums.CardSuit;
 import cat.itacademy.blackjack.enums.CardValue;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Card {
-    @JsonIgnore
     private CardValue value;
-
-    @JsonIgnore
     private CardSuit suit;
 
-    public int getCardValue() {
-        return value.getValue();
-    }
-
-    @JsonGetter("card")
-    public String getCard() {
+    @Override
+    public String toString() {
         return value + " of " + suit;
     }
 }

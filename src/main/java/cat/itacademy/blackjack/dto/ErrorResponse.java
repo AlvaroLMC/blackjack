@@ -1,6 +1,7 @@
 package cat.itacademy.blackjack.dto;
 
 import lombok.Getter;
+
 import java.time.LocalDateTime;
 
 @Getter
@@ -14,5 +15,4 @@ public class ErrorResponse {
         this.status = status;
         this.error = error;
     }
-
 }

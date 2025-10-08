@@ -7,8 +7,9 @@ import reactor.core.publisher.Mono;
 
 public interface GameService {
     Mono<Game> createGame(String playerName);
-    Mono<Game> playGame(String gameId, PlayerMove move);
+    Mono<Game> getGame(String gameId);
     Flux<Game> getAllGames();
-    Mono<Game> getGame(String id);
-    Mono<Void> deleteGame(String id);
+    Mono<Game> playGame(String gameId, PlayerMove move);
+    Mono<Void> deleteGame(String gameId);
+    Flux<Game> getGamesByPlayerName(String playerName);
 }

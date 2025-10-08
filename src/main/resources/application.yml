@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: blackjack-api
+
+  # PostgreSQL Configuration (R2DBC for Player)
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:blackjack_db}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    pool:
+      initial-size: 10
+      max-size: 20
+      max-idle-time: 30m
+
+  # MongoDB Configuration (for Game)
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USER:admin}:${MONGO_PASSWORD:admin123}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${MONGO_DB:blackjack_games}?authSource=admin&authMechanism=SCRAM-SHA-256
+      auto-index-creation: true
+
+  # SQL initialization
+  sql:
+    init:
+      mode: always
+      platform: postgresql
+
+# Logging
+logging:
+  level:
+    root: INFO
+    cat.itacademy.blackjack: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    io.r2dbc.postgresql: DEBUG
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  show-actuator: false

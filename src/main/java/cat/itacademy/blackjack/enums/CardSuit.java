@@ -1,19 +1,18 @@
 package cat.itacademy.blackjack.enums;
 
 public enum CardSuit {
-    HEARTS("Corazones"),
-    DIAMONDS("Diamantes"),
-    CLUBS("Tréboles"),
-    SPADES("Picas");
+    HEARTS("♥"),
+    DIAMONDS("♦"),
+    CLUBS("♣"),
+    SPADES("♠");
 
-    private final String nombreEspanol;
+    private final String symbol;
 
-    CardSuit(String nombreEspanol) {
-        this.nombreEspanol = nombreEspanol;
+    CardSuit(String symbol) {
+        this.symbol = symbol;
     }
 
-    @Override
-    public String toString() {
-        return nombreEspanol;
+    public String getSymbol() {
+        return symbol;
     }
 }

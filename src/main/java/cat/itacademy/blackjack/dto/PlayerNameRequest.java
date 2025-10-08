@@ -1,15 +1,16 @@
 package cat.itacademy.blackjack.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-
-@Setter
-@Getter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "Request para crear una nueva partida con el nombre del jugador")
 public class PlayerNameRequest {
+
+    @Schema(description = "Nombre del jugador", example = "Reinaldo", required = true)
     private String playerName;
-
-    public PlayerNameRequest() {}
-    public PlayerNameRequest(String playerName) { this.playerName = playerName; }
-
 }

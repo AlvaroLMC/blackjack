@@ -8,7 +8,7 @@ public class HealthController {
 
     @GetMapping("/")
     public String health() {
-        return "✅ Blackjack API is running on Render!";
+        return "✅ Blackjack API is running!";
     }
 }
 

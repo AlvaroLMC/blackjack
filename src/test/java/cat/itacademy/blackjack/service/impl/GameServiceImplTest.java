@@ -44,7 +44,7 @@ class GameServiceImplTest {
     @Test
     void createGame_success() {
         Player player = new Player("Alice");
-        Game game = new Game(1L, "Alice");
+        Game game = new Game("Alice");
 
         when(playerService.findByName("Alice")).thenReturn(Mono.just(player));
         when(gameRepository.save(any(Game.class))).thenReturn(Mono.just(game));
@@ -65,7 +65,7 @@ class GameServiceImplTest {
 
     @Test
     void getGame_found_returnsGame() {
-        Game game = new Game(1L, "Bob");
+        Game game = new Game("Bob");
         when(gameRepository.findById("id")).thenReturn(Mono.just(game));
 
         StepVerifier.create(gameService.getGame("id"))
@@ -75,8 +75,8 @@ class GameServiceImplTest {
 
     @Test
     void getAllGames_returnsFlux() {
-        Game g1 = new Game(1L, "A");
-        Game g2 = new Game(2L, "B");
+        Game g1 = new Game("A");
+        Game g2 = new Game("B");
         when(gameRepository.findAll()).thenReturn(Flux.just(g1, g2));
 
         StepVerifier.create(gameService.getAllGames())

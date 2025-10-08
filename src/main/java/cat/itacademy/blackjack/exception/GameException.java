@@ -3,7 +3,6 @@ package cat.itacademy.blackjack.exception;
 import org.springframework.http.HttpStatus;
 
 public class GameException extends RuntimeException {
-
     private final HttpStatus status;
 
     public GameException(String message) {
@@ -20,4 +19,3 @@ public class GameException extends RuntimeException {
         return status;
     }
 }
-

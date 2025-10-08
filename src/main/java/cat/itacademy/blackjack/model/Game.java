@@ -1,99 +1,107 @@
 package cat.itacademy.blackjack.model;
 
 import cat.itacademy.blackjack.enums.GameStatus;
-import cat.itacademy.blackjack.enums.PlayerMove;
 import cat.itacademy.blackjack.enums.Winner;
-import cat.itacademy.blackjack.exception.GameException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.http.HttpStatus;
 
-@Getter
-@Setter
+import java.time.LocalDateTime;
+
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Document(collection = "games")
-@JsonPropertyOrder({"id", "playerId", "playerName", "playerHand", "croupierHand", "winner", "status"})
+@Slf4j
+@Document(collection = "game")
 public class Game {
-
     @Id
     private String id;
-    private Long playerId;
     private String playerName;
-    private Hand playerHand;
-    private Hand croupierHand;
+    private Hand playerHand = new Hand();
+    private Hand dealerHand = new Hand();
+    private Deck deck = new Deck();
     private GameStatus status = GameStatus.IN_PROGRESS;
-    private Winner winner = Winner.NONE;
+    private Winner winner;
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @JsonIgnore
-    private Deck deck;
-
-    public Game(Long playerId, String playerName) {
-        this.playerId = playerId;
+    public Game(String playerName) {
+        log.info("[v0] Game constructor called for player: {}", playerName);
         this.playerName = playerName;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+
+        log.info("[v0] Initializing deck");
+        this.deck = new Deck(true);
         this.playerHand = new Hand();
-        this.croupierHand = new Hand();
-        this.deck = new Deck();
-        initializeGame();
+        this.dealerHand = new Hand();
+
+        log.info("[v0] Dealing initial cards");
+        // Deal initial cards
+        playerHand.addCard(deck.drawCard());
+        dealerHand.addCard(deck.drawCard());
+        playerHand.addCard(deck.drawCard());
+        dealerHand.addCard(deck.drawCard());
+
+        log.info("[v0] Player hand value: {}, Dealer hand value: {}", playerHand.getValue(), dealerHand.getValue());
+
+        // Check for immediate blackjack
+        if (playerHand.isBlackjack() && !dealerHand.isBlackjack()) {
+            log.info("[v0] Player has blackjack!");
+            status = GameStatus.FINISHED;
+            winner = Winner.PLAYER;
+        } else if (dealerHand.isBlackjack() && !playerHand.isBlackjack()) {
+            log.info("[v0] Dealer has blackjack!");
+            status = GameStatus.FINISHED;
+            winner = Winner.DEALER;
+        } else if (playerHand.isBlackjack() && dealerHand.isBlackjack()) {
+            log.info("[v0] Both have blackjack - tie!");
+            status = GameStatus.FINISHED;
+            winner = Winner.TIE;
+        }
+
+        log.info("[v0] Game constructor completed successfully");
     }
 
-    public void playMove(PlayerMove move) {
-        if (status == GameStatus.FINISHED)
-            throw new GameException("The game has finished: " + playerId, HttpStatus.NOT_FOUND);
+    public void playerHit() {
+        if (status == GameStatus.FINISHED) {
+            throw new IllegalStateException("Game is already finished");
+        }
 
-        switch (move) {
-            case HIT -> hit();
-            case STAND -> stand();
-            default -> throw new GameException("Invalid move. Choose HIT or STAND: " + playerId, HttpStatus.NOT_FOUND);
+        playerHand.addCard(deck.drawCard());
+        updatedAt = LocalDateTime.now();
+
+        if (playerHand.isBusted()) {
+            status = GameStatus.FINISHED;
+            winner = Winner.DEALER;
         }
     }
 
-    private void initializeGame() {
-        playerHand.addCard(deck.drawCard());
-        playerHand.addCard(deck.drawCard());
-        croupierHand.addCard(deck.drawCard());
-
-        if (playerHand.isBlackjack()) finishGame(Winner.PLAYER);
-    }
-
-    private void hit() {
-        Card card = deck.drawCard();
-        if (card == null) throw new GameException("No cards left in the deck", HttpStatus.BAD_REQUEST);
-
-        playerHand.addCard(card);
-
-        if (playerHand.isBust()) finishGame(Winner.CROUPIER);
-    }
-
-    private void stand() {
-        while (croupierHand.getHandValue() < 17) {
-            Card card = deck.drawCard();
-            if (card == null) break; // No cards left
-            croupierHand.addCard(card);
+    public void playerStand() {
+        if (status == GameStatus.FINISHED) {
+            throw new IllegalStateException("Game is already finished");
         }
 
+        // Dealer draws until 17 or higher
+        while (dealerHand.getValue() < 17) {
+            dealerHand.addCard(deck.drawCard());
+        }
+
+        updatedAt = LocalDateTime.now();
+        status = GameStatus.FINISHED;
         determineWinner();
     }
 
     private void determineWinner() {
-        int playerScore = playerHand.getHandValue();
-        int croupierScore = croupierHand.getHandValue();
-
-        Winner finalWinner;
-        if (playerScore > 21) finalWinner = Winner.CROUPIER;
-        else if (croupierScore > 21) finalWinner = Winner.PLAYER;
-        else if (playerScore > croupierScore) finalWinner = Winner.PLAYER;
-        else if (playerScore < croupierScore) finalWinner = Winner.CROUPIER;
-        else finalWinner = Winner.TIE;
-
-        finishGame(finalWinner);
-    }
-
-    private void finishGame(Winner winner) {
-        this.status = GameStatus.FINISHED;
-        this.winner = winner;
+        if (dealerHand.isBusted()) {
+            winner = Winner.PLAYER;
+        } else if (playerHand.getValue() > dealerHand.getValue()) {
+            winner = Winner.PLAYER;
+        } else if (playerHand.getValue() < dealerHand.getValue()) {
+            winner = Winner.DEALER;
+        } else {
+            winner = Winner.TIE;
+        }
     }
 }

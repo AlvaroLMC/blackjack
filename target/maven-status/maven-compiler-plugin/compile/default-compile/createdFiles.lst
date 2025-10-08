@@ -10,6 +10,7 @@ cat\itacademy\blackjack\repository\mongo\GameRepository.class
 cat\itacademy\blackjack\repository\mysql\PlayerRepository.class
 cat\itacademy\blackjack\dto\SelectMoveRequest.class
 cat\itacademy\blackjack\service\PlayerService.class
+cat\itacademy\blackjack\config\OpenApiConfig.class
 cat\itacademy\blackjack\controller\HealthController.class
 cat\itacademy\blackjack\dto\ErrorResponse.class
 cat\itacademy\blackjack\service\impl\GameServiceImpl.class

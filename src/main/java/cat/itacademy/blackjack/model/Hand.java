@@ -1,49 +1,41 @@
 package cat.itacademy.blackjack.model;
 
-import cat.itacademy.blackjack.enums.CardValue;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class Hand {
     private List<Card> cards = new ArrayList<>();
+    private int value = 0;
+    private int aces = 0;
 
     public void addCard(Card card) {
         cards.add(card);
-    }
+        value += card.getValue().getValue();
 
-    @JsonProperty("score")
-    public int getHandValue() {
-        return calculateTotal();
-    }
-
-    private int calculateTotal() {
-        int total = 0;
-        int aces = 0;
-
-        for (Card card : cards) {
-            total += card.getCardValue();
-            if (card.getValue() == CardValue.ACE) {
-                aces++;
-            }
+        if (card.getValue().name().equals("ACE")) {
+            aces++;
         }
 
-        while (total > 21 && aces > 0) {
-            total -= 10;
+        adjustForAces();
+    }
+
+    private void adjustForAces() {
+        while (value > 21 && aces > 0) {
+            value -= 10;
             aces--;
         }
+    }
 
-        return total;
+    public boolean isBusted() {
+        return value > 21;
     }
 
     public boolean isBlackjack() {
-        return cards.size() == 2 && calculateTotal() == 21;
-    }
-
-    public boolean isBust() {
-        return calculateTotal() > 21;
+        return cards.size() == 2 && value == 21;
     }
 }

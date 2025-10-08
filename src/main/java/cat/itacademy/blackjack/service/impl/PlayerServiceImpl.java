@@ -15,6 +15,34 @@ public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
 
     @Override
+    public Flux<Player> getAllPlayers() {
+        return playerRepository.findAll();
+    }
+
+    @Override
+    public Mono<Player> getPlayerById(Long id) {
+        return playerRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Player not found: " + id)));
+    }
+
+    @Override
+    public Mono<Player> updatePlayer(Long id, Player player) {
+        return playerRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Player not found: " + id)))
+                .flatMap(existingPlayer -> {
+                    existingPlayer.setName(player.getName());
+                    return playerRepository.save(existingPlayer);
+                });
+    }
+
+    @Override
+    public Mono<Void> deletePlayer(Long id) {
+        return playerRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Player not found: " + id)))
+                .flatMap(player -> playerRepository.deleteById(id));
+    }
+
+    @Override
     public Mono<Player> findByName(String playerName) {
         return playerRepository.findByName(playerName);
     }
@@ -44,12 +72,9 @@ public class PlayerServiceImpl implements PlayerService {
                 });
     }
 
-    // 👇 Nuevo método
     @Override
     public Mono<Player> createPlayer(Player player) {
         player.setPlayerWinsCounter(0);
         return playerRepository.save(player);
     }
-
-
 }
