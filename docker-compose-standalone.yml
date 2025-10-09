@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: blackjack-postgres
+    environment:
+      POSTGRES_DB: blackjack_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - blackjack-network
+
+  mongo:
+    image: mongo:7.0
+    container_name: blackjack-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: blackjack_games
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - blackjack-network
+
+  blackjack-api:
+    image: alvaromendozacuello/blackjack-project:v3
+    container_name: blackjack-api
+    ports:
+      - "8082:8080"
+    environment:
+      # PostgreSQL
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/blackjack_db
+      SPRING_R2DBC_USERNAME: postgres
+      SPRING_R2DBC_PASSWORD: postgres
+      # MongoDB
+      SPRING_DATA_MONGODB_URI: mongodb://admin:admin123@mongo:27017/blackjack_games?authSource=admin&authMechanism=SCRAM-SHA-256
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    networks:
+      - blackjack-network
+
+networks:
+  blackjack-network:
+    driver: bridge

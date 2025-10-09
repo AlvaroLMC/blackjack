@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (for Player)
+  postgres:
+    image: postgres:16-alpine
+    container_name: blackjack-postgres
+    environment:
+      POSTGRES_DB: blackjack_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - blackjack-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB Database (for Game)
+  mongo:
+    image: mongo:7.0
+    container_name: blackjack-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: blackjack_games
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - blackjack-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Blackjack API Application (desde Docker Hub)
+  blackjack-api:
+    image: alvaromendozacuello/blackjack-project:v2
+    container_name: blackjack-api
+    environment:
+      # PostgreSQL Configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: blackjack_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # MongoDB Configuration
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      MONGO_DB: blackjack_games
+      MONGO_USER: admin
+      MONGO_PASSWORD: admin123
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    networks:
+      - blackjack-network
+    restart: unless-stopped
+
+networks:
+  blackjack-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongodb_data:
